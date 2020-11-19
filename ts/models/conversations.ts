@@ -1181,6 +1181,9 @@ export class ConversationModel extends window.Backbone.Model<
       isArchived: this.get('isArchived')!,
       isBlocked: this.isBlocked(),
       isMe: this.isMe(),
+      isGroupV1AndDisabled:
+        this.isGroupV1() &&
+        window.Signal.RemoteConfig.isEnabled('desktop.disableGV1'),
       isPinned: this.get('isPinned'),
       isMissingMandatoryProfileSharing: this.isMissingRequiredProfileSharing(),
       isVerified: this.isVerified(),

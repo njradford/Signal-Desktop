@@ -7,6 +7,7 @@ import { WebAPIType } from './textsecure/WebAPI';
 type ConfigKeyType =
   | 'desktop.cds'
   | 'desktop.clientExpiration'
+  | 'desktop.disableGV1'
   | 'desktop.gv2'
   | 'desktop.mandatoryProfileSharing'
   | 'desktop.messageRequests'

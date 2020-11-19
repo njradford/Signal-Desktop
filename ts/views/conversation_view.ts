@@ -3,9 +3,12 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// Note: because this file is pulled in directly from background.html, we can't use any
-//   imports here aside from types. That means everything will have to be references via
-//   globals right on window.
+// This allows us to pull in types despite the fact that this is not a module. We can't
+//   use normal import syntax, nor can we use 'import type' syntax, or this will be turned
+//   into a module, and we'll get the dreaded 'exports is not defined' error.
+// see https://github.com/microsoft/TypeScript/issues/41562
+type GroupV2MemberType = import('../model-types.d').GroupV2MemberType;
+type GroupV2PendingMemberType = import('../model-types.d').GroupV2PendingMemberType;
 
 interface GetLinkPreviewResult {
   title: string;
@@ -647,6 +650,7 @@ Whisper.ConversationView = Whisper.View.extend({
           ),
         });
       },
+      onStartMigration: () => this.startMigrationToGV2(),
     };
 
     this.compositionAreaView = new Whisper.ReactWrapperView({
@@ -661,13 +665,13 @@ Whisper.ConversationView = Whisper.View.extend({
     this.$('.composition-area-placeholder').append(this.compositionAreaView.el);
   },
 
-  async longRunningTaskWrapper({
+  async longRunningTaskWrapper<T>({
     name,
     task,
   }: {
     name: string;
-    task: () => Promise<void>;
-  }): Promise<void> {
+    task: () => Promise<T>;
+  }): Promise<T> {
     const idLog = `${name}/${this.model.idForLogging()}`;
     const ONE_SECOND = 1000;
     const TWO_SECONDS = 2000;
@@ -690,7 +694,7 @@ Whisper.ConversationView = Whisper.View.extend({
     //   show a spinner until it's done
     try {
       window.log.info(`longRunningTaskWrapper/${idLog}: Starting task`);
-      await task();
+      const result = await task();
       window.log.info(
         `longRunningTaskWrapper/${idLog}: Task completed successfully`
       );
@@ -710,6 +714,8 @@ Whisper.ConversationView = Whisper.View.extend({
         progressView.remove();
         progressView = undefined;
       }
+
+      return result;
     } catch (error) {
       window.log.error(
         `longRunningTaskWrapper/${idLog}: Error!`,
@@ -736,6 +742,8 @@ Whisper.ConversationView = Whisper.View.extend({
           onClose: () => errorView.remove(),
         },
       });
+
+      throw error;
     }
   },
 
@@ -1168,6 +1176,59 @@ Whisper.ConversationView = Whisper.View.extend({
     } finally {
       finish();
     }
+  },
+
+  async startMigrationToGV2(): Promise<void> {
+    const logId = this.model.idForLogging();
+
+    if (!this.model.isGroupV1()) {
+      throw new Error(
+        `startMigrationToGV2/${logId}: Cannot start, not a GroupV1 group`
+      );
+    }
+
+    const onClose = () => {
+      if (this.migrationDialog) {
+        this.migrationDialog.remove();
+        this.migrationDialog = null;
+      }
+    };
+    onClose();
+
+    const migrate = () => {
+      onClose();
+      this.longRunningTaskWrapper({
+        name: 'initiateMigrationToGroupV2',
+        task: () => window.Signal.Groups.initiateMigrationToGroupV2(this.model),
+      });
+    };
+
+    // Grab the dropped/invited user set
+    const { membersV2, pendingMembersV2 } = await this.longRunningTaskWrapper({
+      name: 'getGroupMigrationMembers',
+      task: () => window.Signal.Groups.getGroupMigrationMembers(this.model),
+    });
+
+    const droppedMembers = membersV2.map(
+      (item: GroupV2MemberType) => item.conversationId
+    );
+    const invitedMembers = pendingMembersV2.map(
+      (item: GroupV2PendingMemberType) => item.conversationId
+    );
+
+    this.migrationDialog = new Whisper.ReactWrapperView({
+      className: 'group-v1-migration-wrapper',
+      JSX: window.Signal.State.Roots.createGroupV1MigrationModal(
+        window.reduxStore,
+        {
+          droppedMembers,
+          hasMigrated: false,
+          invitedMembers,
+          migrate,
+          onClose,
+        }
+      ),
+    });
   },
 
   // We need this, or clicking the reactified buttons will submit the form and send any
