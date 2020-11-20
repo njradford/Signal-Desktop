@@ -947,6 +947,26 @@ export async function initiateMigrationToGroupV2(
         );
       }
 
+      const rawSizeLimit = window.Signal.RemoteConfig.getValue(
+        'global.groupsv2.groupSizeHardLimit'
+      );
+      if (!rawSizeLimit) {
+        throw new Error(
+          `initiateMigrationToGroupV2/${logId}: Failed to fetch group size limit`
+        );
+      }
+      const sizeLimit = parseInt(rawSizeLimit, 10);
+      if (!isNumber(sizeLimit) || isNaN(sizeLimit)) {
+        throw new Error(
+          `initiateMigrationToGroupV2/${logId}: Failed to parse group size limit`
+        );
+      }
+      if (membersV2.length + pendingMembersV2.length > sizeLimit) {
+        throw new Error(
+          `initiateMigrationToGroupV2/${logId}: Too many members! Member count: ${membersV2.length}, Pending member count: ${pendingMembersV2.length}`
+        );
+      }
+
       // Note: A few group elements don't need to change here:
       //   - avatar
       //   - name
