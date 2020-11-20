@@ -7007,6 +7007,10 @@ button.module-image__border-overlay:focus {
   overflow: hidden;
 }
 
+.module-timeline--disabled {
+  user-select: none;
+}
+
 .module-timeline__message-container {
   padding-top: 4px;
   padding-bottom: 4px;
