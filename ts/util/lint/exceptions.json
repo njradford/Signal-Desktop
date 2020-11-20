@@ -15172,7 +15172,7 @@
     "rule": "jQuery-wrap(",
     "path": "ts/textsecure/WebAPI.ts",
     "line": "      const byteBuffer = window.dcodeIO.ByteBuffer.wrap(",
-    "lineNumber": 2171,
+    "lineNumber": 2172,
     "reasonCategory": "falseMatch",
     "updated": "2020-09-08T23:07:22.682Z"
   }

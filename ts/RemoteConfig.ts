@@ -12,7 +12,9 @@ type ConfigKeyType =
   | 'desktop.mandatoryProfileSharing'
   | 'desktop.messageRequests'
   | 'desktop.storage'
-  | 'desktop.storageWrite';
+  | 'desktop.storageWrite'
+  | 'global.groupsv2.maxGroupSize'
+  | 'global.groupsv2.groupSizeHardLimit';
 type ConfigValueType = {
   name: ConfigKeyType;
   enabled: boolean;
@@ -112,4 +114,8 @@ export const maybeRefreshRemoteConfig = throttle(
 
 export function isEnabled(name: ConfigKeyType): boolean {
   return get(config, [name, 'enabled'], false);
+}
+
+export function getValue(name: ConfigKeyType): string {
+  return get(config, [name, 'value'], undefined);
 }
