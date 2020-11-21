@@ -632,7 +632,7 @@ export class ConversationModel extends window.Backbone.Model<
     window.Signal.Data.updateConversation(this.attributes);
   }
 
-  isGroupV1AndDisabled() {
+  isGroupV1AndDisabled(): boolean {
     return (
       this.isGroupV1() &&
       window.Signal.RemoteConfig.isEnabled('desktop.disableGV1')

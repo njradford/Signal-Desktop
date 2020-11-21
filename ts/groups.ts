@@ -7,6 +7,7 @@ import {
   difference,
   flatten,
   fromPairs,
+  isFinite,
   isNumber,
   values,
 } from 'lodash';
@@ -956,7 +957,7 @@ export async function initiateMigrationToGroupV2(
         );
       }
       const sizeLimit = parseInt(rawSizeLimit, 10);
-      if (!isNumber(sizeLimit) || isNaN(sizeLimit)) {
+      if (!isFinite(sizeLimit)) {
         throw new Error(
           `initiateMigrationToGroupV2/${logId}: Failed to parse group size limit`
         );
