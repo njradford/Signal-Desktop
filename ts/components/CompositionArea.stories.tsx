@@ -70,7 +70,7 @@ const createProps = (overrideProps: Partial<Props> = {}): Props => ({
   ),
   title: '',
   // GroupV1 Disabled Actions
-  onStartMigration: action('onStartMigration'),
+  onStartGroupMigration: action('onStartGroupMigration'),
 });
 
 story.add('Default', () => {

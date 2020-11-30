@@ -82,7 +82,7 @@ export type Props = Pick<
     | 'clearShowPickerHint'
   > &
   MessageRequestActionsProps &
-  Pick<GroupV1DisabledActionsPropsType, 'onStartMigration'> &
+  Pick<GroupV1DisabledActionsPropsType, 'onStartGroupMigration'> &
   OwnProps;
 
 const emptyElement = (el: HTMLElement) => {
@@ -143,7 +143,7 @@ export const CompositionArea = ({
   title,
   // GroupV1 Disabled Actions
   isGroupV1AndDisabled,
-  onStartMigration,
+  onStartGroupMigration,
 }: Props): JSX.Element => {
   const [disabled, setDisabled] = React.useState(false);
   const [showMic, setShowMic] = React.useState(!draftText);
@@ -393,7 +393,7 @@ export const CompositionArea = ({
   // If this is a V1 group, now disabled entirely, we show UI to help them upgrade
   if (isGroupV1AndDisabled) {
     return (
-      <GroupV1DisabledActions i18n={i18n} onStartMigration={onStartMigration} />
+      <GroupV1DisabledActions i18n={i18n} onStartGroupMigration={onStartGroupMigration} />
     );
   }
 

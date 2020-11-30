@@ -16,7 +16,7 @@ const i18n = setupI18n('en', enMessages);
 
 const createProps = (): GroupV1DisabledActionsPropsType => ({
   i18n,
-  onStartMigration: action('onStartMigration'),
+  onStartGroupMigration: action('onStartGroupMigration'),
 });
 
 const stories = storiesOf(
