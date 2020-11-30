@@ -7,7 +7,6 @@
 //   use normal import syntax, nor can we use 'import type' syntax, or this will be turned
 //   into a module, and we'll get the dreaded 'exports is not defined' error.
 // see https://github.com/microsoft/TypeScript/issues/41562
-type GroupV2MemberType = import('../model-types.d').GroupV2MemberType;
 type GroupV2PendingMemberType = import('../model-types.d').GroupV2PendingMemberType;
 
 interface GetLinkPreviewResult {
@@ -407,8 +406,6 @@ Whisper.ConversationView = Whisper.View.extend({
   },
 
   events: {
-    'click .composition-area-placeholder': 'onClickPlaceholder',
-    'click .bottom-bar': 'focusMessageField',
     'click .capture-audio .microphone': 'captureAudio',
     'change input.file-input': 'onChoseAttachment',
 
@@ -650,7 +647,7 @@ Whisper.ConversationView = Whisper.View.extend({
           ),
         });
       },
-      onStartMigration: () => this.startMigrationToGV2(),
+      onStartGroupMigration: () => this.startMigrationToGV2(),
     };
 
     this.compositionAreaView = new Whisper.ReactWrapperView({
@@ -1190,13 +1187,14 @@ Whisper.ConversationView = Whisper.View.extend({
     const onClose = () => {
       if (this.migrationDialog) {
         this.migrationDialog.remove();
-        this.migrationDialog = null;
+        this.migrationDialog = undefined;
       }
     };
     onClose();
 
     const migrate = () => {
       onClose();
+
       this.longRunningTaskWrapper({
         name: 'initiateMigrationToGroupV2',
         task: () => window.Signal.Groups.initiateMigrationToGroupV2(this.model),
@@ -1204,15 +1202,15 @@ Whisper.ConversationView = Whisper.View.extend({
     };
 
     // Grab the dropped/invited user set
-    const { membersV2, pendingMembersV2 } = await this.longRunningTaskWrapper({
+    const {
+      droppedGV2MemberIds,
+      pendingMembersV2,
+    } = await this.longRunningTaskWrapper({
       name: 'getGroupMigrationMembers',
       task: () => window.Signal.Groups.getGroupMigrationMembers(this.model),
     });
 
-    const droppedMembers = membersV2.map(
-      (item: GroupV2MemberType) => item.conversationId
-    );
-    const invitedMembers = pendingMembersV2.map(
+    const invitedMemberIds = pendingMembersV2.map(
       (item: GroupV2PendingMemberType) => item.conversationId
     );
 
@@ -1221,20 +1219,14 @@ Whisper.ConversationView = Whisper.View.extend({
       JSX: window.Signal.State.Roots.createGroupV1MigrationModal(
         window.reduxStore,
         {
-          droppedMembers,
+          droppedMemberIds: droppedGV2MemberIds,
           hasMigrated: false,
-          invitedMembers,
+          invitedMemberIds,
           migrate,
           onClose,
         }
       ),
     });
-  },
-
-  // We need this, or clicking the reactified buttons will submit the form and send any
-  //   mid-composition message content.
-  onClickPlaceholder(e: any) {
-    e.preventDefault();
   },
 
   onChooseAttachment() {

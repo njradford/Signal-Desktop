@@ -14,8 +14,8 @@ import { getConversationSelector } from '../selectors/conversations';
 import { getIntl } from '../selectors/user';
 
 export type PropsType = {
-  readonly droppedMembers: Array<string>;
-  readonly invitedMembers: Array<string>;
+  readonly droppedMemberIds: Array<string>;
+  readonly invitedMemberIds: Array<string>;
 } & Omit<
   GroupV1MigrationDialogPropsType,
   'i18n' | 'droppedMembers' | 'invitedMembers'
@@ -26,20 +26,21 @@ const mapStateToProps = (
   props: PropsType
 ): GroupV1MigrationDialogPropsType => {
   const getConversation = getConversationSelector(state);
+  const { droppedMemberIds, invitedMemberIds } = props;
 
-  const droppedMembers = props.droppedMembers
+  const droppedMembers = droppedMemberIds
     .map(getConversation)
     .filter(Boolean) as Array<ConversationType>;
-  if (droppedMembers.length !== props.droppedMembers.length) {
+  if (droppedMembers.length !== droppedMemberIds.length) {
     window.log.warn(
       'smart/GroupV1MigrationDialog: droppedMembers length changed'
     );
   }
 
-  const invitedMembers = props.invitedMembers
+  const invitedMembers = invitedMemberIds
     .map(getConversation)
     .filter(Boolean) as Array<ConversationType>;
-  if (invitedMembers.length !== props.invitedMembers.length) {
+  if (invitedMembers.length !== invitedMemberIds.length) {
     window.log.warn(
       'smart/GroupV1MigrationDialog: invitedMembers length changed'
     );

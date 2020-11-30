@@ -393,7 +393,10 @@ export const CompositionArea = ({
   // If this is a V1 group, now disabled entirely, we show UI to help them upgrade
   if (isGroupV1AndDisabled) {
     return (
-      <GroupV1DisabledActions i18n={i18n} onStartGroupMigration={onStartGroupMigration} />
+      <GroupV1DisabledActions
+        i18n={i18n}
+        onStartGroupMigration={onStartGroupMigration}
+      />
     );
   }
 
